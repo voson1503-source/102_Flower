@@ -8,25 +8,24 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Jupyter and logs
-*.ipynb_checkpoints
+# Logs
 logs/
 *.log
 
-# Dataset and extracted files
-data/
-*.tgz
-*.zip
+# Datasets (bỏ qua ảnh, giữ metadata)
+data/flowers/
+data/processed/
+data/*.tgz
+data/*.zip
 
-# Saved models and weights
-models/
-saved_models/
-*.h5
-*.hdf5
+# Giữ lại các file thông tin dataset
+!data/flowernames.txt
+!data/imagelabels.mat
+!data/setid.mat
 
 # Streamlit cache
 .streamlit/
 
-# OS-specific files
+# OS files
 .DS_Store
 Thumbs.db
