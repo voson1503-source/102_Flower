@@ -1,26 +1,35 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
+```gitignore
 # Virtual environment
 venv/
-.env/
+ENV/
+env/
 
-# Data and models (large files)
-data/
-models/
-src/saved_models/
-*.h5
-*.keras
-*.ckpt
-*.pb
+# Cache và build
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
 
 # Logs
+*.log
 logs/
-checkpoints/
+tensorboard/
 
-# IDE
+# Model files lớn
+*.h5
+*.keras
+models/
+
+# Data raw nặng
+data/*.tgz
+data/*.zip
+data/*.7z
+
+# DS_Store (Mac)
+.DS_Store
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# VSCode settings
 .vscode/
-.idea/
