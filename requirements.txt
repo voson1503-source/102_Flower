@@ -1,0 +1,9 @@
+tensorflow==2.15.0
+tensorflow-datasets
+matplotlib
+numpy
+pandas
+scikit-learn
+opencv-python
+jupyter
+streamlit
