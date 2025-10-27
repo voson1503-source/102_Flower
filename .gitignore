@@ -15,10 +15,11 @@ __pycache__/
 logs/
 tensorboard/
 
-# Model files lớn
+# Model files
+models/
+src/saved_models/
 *.h5
 *.keras
-models/
 
 # Data raw nặng
 data/*.tgz
