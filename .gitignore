@@ -1,31 +1,26 @@
-# Virtual environment
-venv/
-.env/
-
-# Python cache
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
+# Virtual environment
+venv/
+.env/
+
+# Data and models (large files)
+data/
+models/
+src/saved_models/
+*.h5
+*.keras
+*.ckpt
+*.pb
+
 # Logs
 logs/
-*.log
+checkpoints/
 
-# Datasets (bỏ qua ảnh, giữ metadata)
-data/flowers/
-data/processed/
-data/*.tgz
-data/*.zip
-
-# Giữ lại các file thông tin dataset
-!data/flowernames.txt
-!data/imagelabels.mat
-!data/setid.mat
-
-# Streamlit cache
-.streamlit/
-
-# OS files
-.DS_Store
-Thumbs.db
+# IDE
+.vscode/
+.idea/
