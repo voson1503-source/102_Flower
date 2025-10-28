@@ -143,4 +143,3 @@ if __name__ == "__main__":
         validation_steps=validation_steps,
         callbacks=[checkpoint_cb, earlystop_cb, reduce_lr_cb, csv_logger_cb, tensorboard_cb]
     )
-
