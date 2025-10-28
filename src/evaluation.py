@@ -4,6 +4,7 @@
 """
 
 import os
+import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -93,6 +94,41 @@ def plot_confusion_matrix(model, gen, class_names=None, title="Confusion Matrix"
     ))
 
 # ==============================
+# 📊 Vẽ biểu đồ Accuracy và Loss
+# ==============================
+def plot_training_curves(log_path):
+    if not os.path.exists(log_path):
+        print(f"⚠️ Không tìm thấy file log: {log_path}")
+        return
+    
+    log_data = pd.read_csv(log_path)
+    epochs = range(1, len(log_data) + 1)
+
+    # Accuracy
+    plt.figure(figsize=(8,5))
+    plt.plot(epochs, log_data["accuracy"], label="Train Accuracy")
+    plt.plot(epochs, log_data["val_accuracy"], label="Val Accuracy")
+    plt.title("Training & Validation Accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # Loss
+    plt.figure(figsize=(8,5))
+    plt.plot(epochs, log_data["loss"], label="Train Loss")
+    plt.plot(epochs, log_data["val_loss"], label="Val Loss")
+    plt.title("Training & Validation Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    print("✅ Biểu đồ đã được hiển thị.")
+
+# ==============================
 # 🔹 Top-k accuracy
 # ==============================
 def top_k_accuracy(model, gen, k=5, name="Validation"):
@@ -115,5 +151,8 @@ if __name__ == "__main__":
     test_gen = create_generator(subset="test")
     plot_confusion_matrix(model, test_gen, title="Test Confusion Matrix")
     top_k_accuracy(model, test_gen, k=5, name="Test")
+
+    log_csv = os.path.join(MODEL_DIR, "training_log.csv")
+    plot_training_curves(log_csv)
 
    
