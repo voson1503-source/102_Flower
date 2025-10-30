@@ -1,12 +1,8 @@
 import os
 import tarfile
 import scipy.io
-import tensorflow as tf
-from sklearn.model_selection import train_test_split
-import shutil
-import matplotlib.pyplot as plt
 from PIL import Image
-import random
+import shutil
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "../data")
 DATA_DIR = os.path.abspath(DATA_DIR)
@@ -35,74 +31,77 @@ def load_labels():
     return labels
 
 
+def load_splits():
+    """Đọc các chỉ số ảnh thuộc train/test/val từ setid.mat"""
+    setid_path = os.path.join(DATA_DIR, "setid.mat")
+    mat = scipy.io.loadmat(setid_path)
+    train_ids = mat["trnid"][0] - 1  # trừ 1 để thành index Python
+    val_ids = mat["valid"][0] - 1
+    test_ids = mat["tstid"][0] - 1
+    print(f"✅ Tập train: {len(train_ids)}, val: {len(val_ids)}, test: {len(test_ids)}")
+    return train_ids, val_ids, test_ids
+
+
+def resize_and_save(image_path, save_path, size=(224, 224)):
+    """Mở ảnh, resize và lưu lại"""
+    image = Image.open(image_path).convert("RGB")
+    image = image.resize(size)
+    image.save(save_path, "JPEG", quality=95)
+
+
 def preprocess_images(labels):
-    """Chia dữ liệu train/test và lưu vào thư mục processed"""
+    """Chia dữ liệu theo setid.mat, resize 224x224 và lưu vào processed"""
     if os.path.exists(PROCESSED_DIR):
         shutil.rmtree(PROCESSED_DIR)
     os.makedirs(PROCESSED_DIR, exist_ok=True)
 
-    image_dir = os.path.join(EXTRACTED_DIR, "jpg")
-    image_paths = sorted([os.path.join(image_dir, f) for f in os.listdir(image_dir)])
-    train_paths, test_paths, y_train, y_test = train_test_split(
-        image_paths, labels, test_size=0.2, random_state=42, stratify=labels
-    )
+    # 🔹 Load phân chia dữ liệu chuẩn từ setid.mat
+    train_ids, val_ids, test_ids = load_splits()
 
-    def save_subset(paths, labels, subset):
+    image_dir = os.path.join(EXTRACTED_DIR, "jpg")
+    image_files = sorted(os.listdir(image_dir))
+
+    def save_subset(ids, subset):
         subset_dir = os.path.join(PROCESSED_DIR, subset)
         os.makedirs(subset_dir, exist_ok=True)
-        for img_path, label in zip(paths, labels):
+        for idx in ids:
+            img_path = os.path.join(image_dir, image_files[idx])
+            label = labels[idx]
             label_dir = os.path.join(subset_dir, str(label))
             os.makedirs(label_dir, exist_ok=True)
             dest = os.path.join(label_dir, os.path.basename(img_path))
-            shutil.copy(img_path, dest)
+            resize_and_save(img_path, dest)
+        print(f"✅ Đã xử lý {subset} ({len(ids)} ảnh).")
 
-    save_subset(train_paths, y_train, "train")
-    save_subset(test_paths, y_test, "test")
-    print("✅ Đã tạo tập train/test và lưu trong thư mục processed/")
+    save_subset(train_ids, "train")
+    save_subset(val_ids, "val")
+    save_subset(test_ids, "test")
 
+    print("🎯 Hoàn tất chia dữ liệu & resize ảnh 224x224.")
 
-def show_sample_images(subset="train", num_images=10, img_size=(224, 224)):
-    """Hiển thị ngẫu nhiên một số ảnh mẫu (mặc định 10 ảnh) kèm tên loài hoa."""
-    names_map = {}
-    if os.path.exists(FLOWER_NAMES_PATH):
-        with open(FLOWER_NAMES_PATH, "r", encoding="utf-8") as f:
-            for i, line in enumerate(f, start=1):
-                names_map[i] = line.strip()
+def show_original_samples(num_images=5):
+    """Hiển thị một vài ảnh gốc (trước khi xử lý)"""
+    import random
+    import matplotlib.pyplot as plt
 
-    subset_dir = os.path.join(PROCESSED_DIR, subset)
+    image_dir = os.path.join(EXTRACTED_DIR, "jpg")
+    image_files = sorted(os.listdir(image_dir))
+    sampled = random.sample(image_files, num_images)
 
-    # 🔹 Lấy tất cả ảnh từ các lớp con
-    all_images = []
-    for cls in os.listdir(subset_dir):
-        cls_dir = os.path.join(subset_dir, cls)
-        imgs = [os.path.join(cls_dir, f) for f in os.listdir(cls_dir) if f.endswith(".jpg")]
-        all_images.extend([(img, int(cls)) for img in imgs])
-
-    # 🔹 Lấy ngẫu nhiên num_images ảnh
-    sampled = random.sample(all_images, min(num_images, len(all_images)))
-
-    cols = 5  # số ảnh mỗi hàng
-    rows = (len(sampled) + cols - 1) // cols
-    plt.figure(figsize=(cols * 3, rows * 3))
-
-    for i, (img_path, label) in enumerate(sampled, 1):
-        image = Image.open(img_path).resize(img_size)
-        label_name = names_map.get(label, f"Class {label}")
-        plt.subplot(rows, cols, i)
-        plt.imshow(image)
+    plt.figure(figsize=(15, 4))
+    for i, fname in enumerate(sampled, 1):
+        img_path = os.path.join(image_dir, fname)
+        img = Image.open(img_path)
+        plt.subplot(1, num_images, i)
+        plt.imshow(img)
         plt.axis("off")
-        plt.title(label_name, fontsize=9, pad=8)
-
-    plt.subplots_adjust(hspace=0.6, wspace=0.3)
+        plt.title(f"Ảnh gốc\n{fname}", fontsize=8)
     plt.tight_layout()
     plt.show()
-
-
 
 
 if __name__ == "__main__":
     extract_data()
     labels = load_labels()
+    show_original_samples() 
     preprocess_images(labels)
-    print("📸 Hiển thị một vài ảnh mẫu sau khi xử lý...")
-    show_sample_images(subset="train", num_images=10)

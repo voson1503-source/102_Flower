@@ -1,16 +1,25 @@
 """
 eda.py – Phân tích dữ liệu khám phá cho tập Oxford 102 Flowers.
+Hiển thị ảnh kèm tên hoa thay vì số lớp.
 """
 
 import os
+import random
 import matplotlib.pyplot as plt
-from collections import Counter
 from PIL import Image
 
+# Đường dẫn thư mục dữ liệu
 DATA_DIR = os.path.join(os.path.dirname(__file__), "../data")
 DATA_DIR = os.path.abspath(DATA_DIR)
 PROCESSED_DIR = os.path.join(DATA_DIR, "processed")
 FLOWER_NAMES_PATH = os.path.join(DATA_DIR, "flowernames.txt")
+
+
+def load_flower_names():
+    """Đọc danh sách tên hoa từ file flowernames.txt"""
+    with open(FLOWER_NAMES_PATH, "r") as f:
+        names = [line.strip() for line in f.readlines()]
+    return names
 
 
 def get_class_distribution(subset="train"):
@@ -39,9 +48,10 @@ def plot_class_distribution(subset="train", top_n=20):
 
 
 def show_random_samples(subset="train", n_images=10):
-    """Hiển thị ngẫu nhiên n ảnh trong tập train/test"""
-    import random
+    """Hiển thị ngẫu nhiên n ảnh trong tập train/test với tên hoa"""
+    flower_names = load_flower_names()
     subset_dir = os.path.join(PROCESSED_DIR, subset)
+
     all_paths = []
     for cls in os.listdir(subset_dir):
         cls_dir = os.path.join(subset_dir, cls)
@@ -55,7 +65,8 @@ def show_random_samples(subset="train", n_images=10):
         plt.subplot(2, 5, i)
         plt.imshow(Image.open(img_path))
         plt.axis("off")
-        plt.title(f"Class {label}")
+        flower_name = flower_names[label - 1].title()  # lấy tên hoa
+        plt.title(f"{flower_name}\n(ID: {label})", fontsize=9)
     plt.tight_layout()
     plt.show()
 
